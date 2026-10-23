@@ -13,7 +13,7 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand"><div class="brand-mark"><img src="/bolt.svg" alt=""></div><div><div class="brand-name">EasyPeasy <span>STUDIO</span></div><div class="brand-motto">Easy to read. Powerful to build.</div></div></div>
+      <a class="brand" id="brandHome" href="/" title="새로고침"><div class="brand-mark"><img src="/bolt.svg" alt=""></div><div><div class="brand-name">EasyPeasy <span>STUDIO</span></div><div class="brand-motto">Easy to read. Powerful to build.</div></div></a>
       <div class="top-actions">
         <span id="connection" class="status"><i></i> 서버 연결 확인 중</span>
         <button class="icon-button" id="helpButton" title="도움말">?</button>
@@ -35,20 +35,18 @@
           <div class="side-note">브라우저에서 편집하고 실행하세요.</div>
         </div>
         <div id="helpView" class="side-view hidden">
-          <input id="helpSearch" class="search-input" placeholder="문법·함수 검색…">
+          <input id="helpSearch" class="search-input" placeholder="문법·함수 검색…"><div id="helpCount" class="help-count">검색 목록 불러오는 중…</div>
           <div id="helpResults"></div>
         </div>
-        <div id="aiView" class="side-view hidden">
-          <div class="ai-intro"><div class="ai-symbol">✳</div><h3>AI 코딩 도우미</h3><p>코드를 설명하고, 오류를 찾아 실제 편집기에 수정안을 적용합니다.</p></div>
-          <label class="field-label" for="aiPrompt">무엇을 도와드릴까요?</label>
-          <textarea id="aiPrompt" placeholder="예: 이 코드의 오류를 고치고 왜 그런지 설명해 줘."></textarea>
-          <button id="askAiButton" class="primary-button wide">✳ AI에게 요청</button>
-          <div id="aiStatus" class="ai-status">API 키는 서버의 .env 파일에 설정합니다.</div>
-          <div id="aiResponse" class="ai-response hidden"></div>
+        <div id="aiView" class="side-view hidden ai-chat-view">
+          <div class="ai-intro"><div class="ai-symbol">✳</div><h3>EasyPeasy AI</h3><p>현재 프로젝트와 EasyPeasy 문법을 기준으로 답변합니다.</p></div>
+          <div id="aiChatLog" class="ai-chat-log"><div class="chat-bubble assistant">안녕하세요. 코드를 설명하거나, 오류를 진단하거나, 수정안을 만들어 드릴 수 있어요. 코드 변경이 필요 없는 질문에는 수정안을 억지로 만들지 않습니다.</div></div>
+          <div class="ai-composer"><textarea id="aiPrompt" placeholder="무엇을 만들거나 고칠까요? (Enter 전송, Shift+Enter 줄바꿈)"></textarea><button id="askAiButton" class="primary-button wide">보내기 ↑</button></div>
+          <div id="aiStatus" class="ai-status">AI 연결 상태를 확인하는 중…</div><div id="aiResponse" class="ai-response hidden"></div>
         </div>
       </aside>
       <section class="main-area">
-        <div class="tabbar"><div class="tab active" id="mainFileTab"><span class="file-icon">ϟ</span> <span id="activeFileName">main.ep</span> <span class="dirty-dot" id="dirtyDot"></span></div><div class="tab-spacer"></div><button class="subtle-button" id="pythonButton">⇄ Python 변환</button><button class="subtle-button" id="downloadButton">↓ 내보내기</button></div>
+        <div class="tabbar"><div class="tab active" id="mainFileTab"><span class="file-icon">ϟ</span> <span id="activeFileName">main.ep</span> <span class="dirty-dot" id="dirtyDot"></span></div><div class="tab-spacer"></div><button class="subtle-button" id="convertButton" title="현재 코드를 AI 서버를 이용해 EasyPeasy로 변환">⇄ 다른 언어 → EP</button><button class="subtle-button" id="pythonButton">EP → Python</button><button class="subtle-button" id="clearCodeButton" title="현재 파일의 코드를 모두 지웁니다">코드 모두 지우기</button><button class="subtle-button" id="downloadButton">↓ 내보내기</button></div>
         <div class="editor-toolbar"><span class="crumb">main.ep <span>/</span> EasyPeasy</span><div class="toolbar-actions"><span id="diagnosticCount" class="diagnostic-count">✓ 오류 없음</span><button class="subtle-button" id="formatButton">정리</button></div></div>
         <div class="editor-wrap"><div id="editor"></div><textarea id="fallbackEditor" spellcheck="false" aria-label="EasyPeasy 코드 편집기"></textarea></div>
         <div class="bottom-panel" id="bottomPanel">
@@ -56,7 +54,7 @@
           <div id="outputPanel" class="panel-content"><div id="outputText" class="console-text"><span class="muted">실행을 누르면 프로그램 출력이 여기에 표시됩니다.</span></div><div id="terminalInput"></div><div id="runMeta" class="run-meta"></div></div>
           <div id="problemsPanel" class="panel-content hidden"><div id="problemsList" class="problems-list"><div class="empty-state">현재 표시할 문제가 없습니다.</div></div></div>
         </div>
-        <footer class="statusbar"><span><b>ϟ</b> EasyPeasy MVP</span><span id="cursorStatus">줄 1, 열 1</span><span id="languageStatus">EasyPeasy</span><span>UTF-8</span></footer>
+        <footer class="statusbar"><span><b>ϟ</b> EasyPeasy Studio</span><span id="cursorStatus">줄 1, 열 1</span><span id="languageStatus">EasyPeasy</span><span>UTF-8</span></footer>
       </section>
       <aside class="right-panel" id="rightPanel">
         <div class="right-heading"><span>AI EDIT</span><button id="toggleRightPanel" class="subtle-button" title="패널 접기/펼치기">⇥</button><span class="live-dot"></span></div>
@@ -65,7 +63,7 @@
         <div class="brand-card"><img src="/bolt.svg" alt=""><div><b>EasyPeasy</b><small>Easy to read. Powerful to build.</small></div></div>
       </aside>
     </main>
-    <div class="mobile-nav"><button class="active" data-mobile="code">코드</button><button data-mobile="output">출력</button><button data-mobile="problems">문제</button><button data-mobile="ai">AI</button><button data-mobile="files">파일</button></div>
+    <div class="mobile-nav"><button class="active" data-mobile="code">코드</button><button data-mobile="ai">AI 도우미</button><button data-mobile="files">파일</button></div>
   </div>
   <dialog id="editDialog" class="edit-dialog">
     <form method="dialog"><div class="dialog-head"><div><div class="eyebrow">AI CHANGE REVIEW</div><h2>코드 수정 제안</h2></div><button class="icon-button" value="cancel" aria-label="닫기">×</button></div></form>

@@ -267,10 +267,8 @@ export function diagnoseEasyPeasy(code) {
     if (/^[A-Za-z_]\w*\s*=/.test(t) && /[=+\-*/]\s*$/.test(t)) {
       push(li + 1, Math.max(1, line.length), "연산자 뒤에 값이 없습니다.");
     }
-    if (/^\s+else\s*:/.test(line)) {
-      const prev = lines.slice(0, li).reverse().find(x => x.trim());
-      if (!prev || !/^if\b/.test(prev.trim())) push(li + 1, line.search(/\S/) + 1, "else는 대응하는 if 블록 뒤에 와야 합니다.", "warning");
-    }
+    // Do not guess whether an indented `else` matches an earlier `if` here.
+    // A nearest-line heuristic produced false warnings for valid nested blocks.
   }
   for (const item of stack) push(item.line, item.column, `여는 괄호 '${item.ch}'가 닫히지 않았습니다.`);
   // De-duplicate diagnostics at the same location.

@@ -117,16 +117,16 @@ function buildSearchCatalog(){
  for(const [title,code] of snippets)add(title,'자주 쓰는 Python 문법',`${title} 예제입니다.`,code);
  const patterns=['리스트 추가','리스트 삭제','리스트 복사','리스트 정렬','리스트 역순','리스트 길이','리스트 최댓값','리스트 최솟값','리스트 합계','리스트 중복 제거','문자열 대문자','문자열 소문자','문자열 공백 제거','문자열 분리','문자열 결합','문자열 치환','딕셔너리 키 목록','딕셔너리 값 목록','딕셔너리 순회','딕셔너리 기본값','집합 합집합','집합 교집합','집합 차집합','튜플 언패킹'];
  for(const title of patterns){const [type,op]=title.split(' ');const code=title.includes('추가')?'items.append(value)':title.includes('삭제')?'items.remove(value)':title.includes('복사')?'items.copy()':title.includes('정렬')?'sorted(items)':title.includes('역순')?'list(reversed(items))':title.includes('길이')?'len(items)':title.includes('최댓값')?'max(items)':title.includes('최솟값')?'min(items)':title.includes('합계')?'sum(items)':title.includes('중복')?'list(dict.fromkeys(items))':title.includes('대문자')?'text.upper()':title.includes('소문자')?'text.lower()':title.includes('공백')?'text.strip()':title.includes('분리')?'text.split(",")':title.includes('결합')?'", ".join(words)':title.includes('치환')?'text.replace(old, new)':title.includes('키 목록')?'list(data.keys())':title.includes('값 목록')?'list(data.values())':title.includes('순회')?'for key, value in data.items():\n    print(key, value)':title.includes('기본값')?'data.get(key, default)':title.includes('합집합')?'left | right':title.includes('교집합')?'left & right':title.includes('차집합')?'left - right':'first, second = pair';add(title,'실전 코드 패턴',`${title}을 위한 코드 패턴입니다.`,code);}
- const unique=[];const seen=new Set();for(const item of items){const key=item.title+'|'+item.code;if(!seen.has(key)){seen.add(key);unique.push(item);}}return unique.slice(0,1000);
+ const unique=[];const seen=new Set();for(const item of items){const key=item.title+'|'+item.code;if(!seen.has(key)){seen.add(key);unique.push(item);}}return unique;
 }
 const searchCatalog=buildSearchCatalog();
 // Expand the searchable reference with practical combinations of common operations.
 // These are templates; they are explicitly Python references, not EasyPeasy runtime promises.
-if(searchCatalog.length<1000){
-  const vars=[['items','리스트'],['numbers','숫자 목록'],['scores','점수 목록'],['names','이름 목록'],['words','단어 목록'],['values','값 목록'],['records','레코드 목록'],['results','결과 목록'],['data','데이터'],['users','사용자 목록'],['ages','나이 목록'],['prices','가격 목록'],['products','상품 목록'],['students','학생 목록'],['grades','성적 목록'],['cities','도시 목록'],['letters','문자 목록'],['temperatures','온도 목록'],['tasks','작업 목록'],['files','파일 목록'],['paths','경로 목록'],['events','이벤트 목록'],['messages','메시지 목록'],['points','점수 데이터'],['ids','ID 목록'],['colors','색상 목록'],['questions','질문 목록'],['answers','답변 목록'],['orders','주문 목록'],['employees','직원 목록'],['books','책 목록'],['movies','영화 목록'],['logs','로그 목록'],['rows','행 데이터'],['columns','열 데이터']];
-  const ops=[['길이','len(V)'],['정렬','sorted(V)'],['역순 정렬','sorted(V, reverse=True)'],['최솟값','min(V)'],['최댓값','max(V)'],['합계','sum(V)'],['중복 제거','list(dict.fromkeys(V))'],['인덱스와 값','list(enumerate(V))'],['복사','V.copy()'],['슬라이스','V[1:-1]'],['첫 항목','V[0]'],['마지막 항목','V[-1]'],['앞 3개','V[:3]'],['뒤 3개','V[-3:]'],['반복','for item in V:\n    print(item)'],['필터링','[item for item in V if condition]'],['변환','[transform(item) for item in V]'],['개수 세기','V.count(target)'],['포함 여부','target in V'],['인덱스 찾기','V.index(target)'],['최대 길이','max(V, key=len)'],['키 기준 정렬','sorted(V, key=lambda item: item["name"])'],['조건 정렬','sorted(V, key=lambda item: item["score"], reverse=True)'],['두 목록 결합','list(zip(V, other))'],['조건에 맞는 개수','sum(1 for item in V if condition)']];
+if(searchCatalog.length<2500){
+  const vars=[['items','리스트'],['numbers','숫자 목록'],['scores','점수 목록'],['names','이름 목록'],['words','단어 목록'],['values','값 목록'],['records','레코드 목록'],['results','결과 목록'],['data','데이터'],['users','사용자 목록'],['ages','나이 목록'],['prices','가격 목록'],['products','상품 목록'],['students','학생 목록'],['grades','성적 목록'],['cities','도시 목록'],['letters','문자 목록'],['temperatures','온도 목록'],['tasks','작업 목록'],['files','파일 목록'],['paths','경로 목록'],['events','이벤트 목록'],['messages','메시지 목록'],['points','점수 데이터'],['ids','ID 목록'],['colors','색상 목록'],['questions','질문 목록'],['answers','답변 목록'],['orders','주문 목록'],['employees','직원 목록'],['books','책 목록'],['movies','영화 목록'],['logs','로그 목록'],['rows','행 데이터'],['columns','열 데이터'],['emails','이메일 목록'],['urls','URL 목록'],['cart','장바구니'],['inventory','재고 목록'],['payments','결제 목록'],['sessions','세션 목록'],['tokens','토큰 목록'],['settings','설정값'],['config','환경 설정'],['matrix','행렬'],['grid','격자'],['queue','대기열'],['stack','스택'],['history','기록 목록'],['cache','캐시'],['measurements','측정값'],['samples','표본 목록'],['coordinates','좌표 목록'],['translations','번역 목록'],['sentences','문장 목록'],['paragraphs','문단 목록'],['notifications','알림 목록'],['permissions','권한 목록'],['categories','분류 목록'],['tags','태그 목록'],['comments','댓글 목록'],['reviews','후기 목록'],['ratings','평점 목록'],['transactions','거래 목록'],['balances','잔액 목록'],['milestones','단계 목록'],['dependencies','의존성 목록'],['modules','모듈 목록'],['plugins','플러그인 목록'],['commands','명령 목록'],['arguments','인수 목록'],['options','옵션 목록'],['responses','응답 목록'],['requests','요청 목록'],['payloads','전송 데이터'],['headers','헤더 목록'],['cookies','쿠키 목록'],['students_by_id','학생별 데이터'],['scores_by_class','반별 점수'],['products_by_id','상품별 데이터'],['users_by_id','사용자별 데이터'],['events_by_day','날짜별 이벤트'],['sales_by_month','월별 매출'],['tasks_by_status','상태별 작업'],['words_by_count','빈도별 단어'],['items_by_type','종류별 항목'],['results_by_name','이름별 결과'],['records_by_date','날짜별 기록'],['prices_by_code','코드별 가격'],['points_by_level','레벨별 점수'],['answers_by_question','질문별 답변'],['books_by_author','작가별 도서'],['logs_by_level','수준별 로그'],['files_by_name','이름별 파일'],['users_by_role','역할별 사용자'],['orders_by_status','상태별 주문'],['messages_by_room','방별 메시지']];
+  const ops=[['길이','len(V)'],['정렬','sorted(V)'],['역순 정렬','sorted(V, reverse=True)'],['최솟값','min(V)'],['최댓값','max(V)'],['합계','sum(V)'],['중복 제거','list(dict.fromkeys(V))'],['인덱스와 값','list(enumerate(V))'],['복사','V.copy()'],['슬라이스','V[1:-1]'],['첫 항목','V[0]'],['마지막 항목','V[-1]'],['앞 3개','V[:3]'],['뒤 3개','V[-3:]'],['반복','for item in V:\n    print(item)'],['필터링','[item for item in V if condition]'],['변환','[transform(item) for item in V]'],['개수 세기','V.count(target)'],['포함 여부','target in V'],['인덱스 찾기','V.index(target)'],['최대 길이','max(V, key=len)'],['키 기준 정렬','sorted(V, key=lambda item: item["name"])'],['조건 정렬','sorted(V, key=lambda item: item["score"], reverse=True)'],['두 목록 결합','list(zip(V, other))'],['조건에 맞는 개수','sum(1 for item in V if condition)'],['첫 항목 제외','V[1:]'],['마지막 항목 제외','V[:-1]'],['짝수 위치 항목','V[::2]'],['홀수 위치 항목','V[1::2]'],['목록 이어 붙이기','V + other'],['목록 반복','V * 2'],['평균 계산','sum(V) / len(V)'],['특정 값 개수','V.count(target)'],['모든 값 검사','all(condition for item in V)'],['하나라도 검사','any(condition for item in V)'],['키 존재 확인','key in V'],['안전한 기본값','V.get(key, default)'],['키와 값 쌍','list(V.items())'],['키만 추출','list(V.keys())'],['값만 추출','list(V.values())'],['항목 묶기','list(zip(V, other))'],['문자열 합치기','separator.join(V)'],['문자열 분리','text.split(separator)'],['공백 제거','text.strip()'],['접두사 확인','text.startswith(prefix)'],['접미사 확인','text.endswith(suffix)'],['부분 문자열 바꾸기','text.replace(old, new)'],['문자열 대문자','text.upper()'],['문자열 소문자','text.lower()'],['문자열 숫자 검사','text.isdigit()'],['문자열 글자 검사','text.isalpha()'],['파일 경로 확장자','path.suffix'],['JSON 읽기','json.loads(text)'],['JSON 만들기','json.dumps(data, ensure_ascii=False)'],['날짜 현재 시각','datetime.now()'],['랜덤 항목 선택','random.choice(V)'],['최대 N개','sorted(V, reverse=True)[:n]'],['정렬된 고유 값','sorted(set(V))'],['딕셔너리 기본값 설정','V.setdefault(key, default)'],['항목 위치 찾기','V.index(target)'],['항목 삭제 후 반환','V.pop()'],['새 항목 추가','V.append(value)'],['여러 항목 추가','V.extend(other)'],['항목 삽입','V.insert(index, value)'],['목록 비우기','V.clear()'],['목록 복사','V.copy()'],['문자열 시작 문자 제거','text.lstrip()'],['문자열 끝 문자 제거','text.rstrip()'],['문자열 단어별 분리','text.split()'],['문자열 줄별 분리','text.splitlines()'],['숫자 반올림','round(value, 2)'],['절댓값','abs(value)'],['거듭제곱','pow(base, exponent)'],['최솟값과 최댓값','min(V), max(V)'],['정렬 후 일부 선택','sorted(V)[:count]'],['조건에 맞는 목록','[item for item in V if condition]'],['값 변환 목록','[transform(item) for item in V]'],['번호와 항목','list(enumerate(V, start=1))'],['목록 합치기','V + other'],['문자열 포함 여부','part in text'],['대소문자 무시 비교','left.lower() == right.lower()'],['문자열 길이','len(text)'],['문자열 반복','text * count'],['문자열 앞부분','text[:count]'],['문자열 뒷부분','text[-count:]']];
   outer: for(const [variable,label] of vars) for(const [operation,template] of ops){
-    if(searchCatalog.length>=1000)break outer;
+    if(searchCatalog.length>=2500)break outer;
     const code=template.replaceAll('V',variable);
     searchCatalog.push({title:`${label} · ${operation} (${variable})`,category:'Python 실전 템플릿',description:`${variable} 변수에 적용하는 ${operation} 코드 예제입니다. 변수 이름과 조건을 실제 코드에 맞게 바꾸세요.`,code});
   }
@@ -235,6 +235,7 @@ async function runCode() {
 function renderHelp(query="") {
   const q=query.trim().toLowerCase();
   const matches=searchCatalog.filter(item=>`${item.title} ${item.category} ${item.description} ${item.code}`.toLowerCase().includes(q)).slice(0,100);
+  if($("helpCount")) $("helpCount").textContent = `검색 가능한 항목 ${searchCatalog.length.toLocaleString()}개 · 현재 ${matches.length}개 표시` + (q ? ` · 검색어: ${query.trim()}` : '');
   $("helpResults").innerHTML=matches.map(item=>`<div class="help-result"><b>${escapeHTML(item.title)}</b><small>${escapeHTML(item.category)} · ${escapeHTML(item.description)}</small><button class="help-copy" data-copy="${searchCatalog.indexOf(item)}">복사</button></div>`).join("")||'<div class="side-note">검색 결과가 없습니다.</div>';
   $("helpResults").querySelectorAll('[data-copy]').forEach(btn=>btn.addEventListener('click',async()=>{const item=searchCatalog[Number(btn.dataset.copy)];try{await navigator.clipboard.writeText(item.code);showToast('예제 코드를 복사했습니다.')}catch{showToast('클립보드 권한을 허용해 주세요.')}}));
 }
@@ -247,32 +248,48 @@ function openSidebar(view) {
   $("sideTitle").textContent = view === "files" ? "탐색기" : view === "help" ? "도움말" : "AI 도우미";
   document.querySelectorAll(".rail-button[data-view]").forEach(b => b.classList.toggle("active", b.dataset.view === view));
 }
+let aiBusy = false;
+const aiConversation = [];
+function addChatBubble(text, role='assistant', extraClass='') {
+  const log = $('aiChatLog'); if (!log) return null;
+  const node = document.createElement('div'); node.className = `chat-bubble ${role} ${extraClass}`.trim(); node.textContent = text;
+  log.appendChild(node); log.scrollTop = log.scrollHeight; return node;
+}
 function askAI() {
-  const prompt = $("aiPrompt").value.trim();
-  if (!prompt) { showToast("AI에게 요청할 내용을 입력하세요."); return; }
-  const before = getCode();
-  $("askAiButton").disabled = true; $("askAiButton").textContent = "응답 대기 중…";
-  $("aiStatus").textContent = "현재 코드와 요청을 분석하고 있습니다.";
-  $("aiResponse").classList.remove("hidden"); $("aiResponse").textContent = "응답을 기다리는 중…";
-  postJSON("/api/ai", {code:before,prompt}).then(data => {
-    pendingExplanation = data.explanation;
-    $("aiResponse").textContent = data.explanation;
-    if (typeof data.code === "string" && data.code !== before) {
-      if (before !== getCode()) throw new Error("요청 중 편집기 내용이 변경되어 제안을 적용하지 않았습니다. 다시 요청해 주세요.");
-      proposedCode = data.code;
-      $("editExplanation").textContent = data.explanation;
-      $("oldCode").textContent = before;
-      $("newCode").textContent = proposedCode;
-      $("editDialog").showModal();
-      $("aiStatus").textContent = "수정 제안이 준비되었습니다. 비교한 뒤 적용하세요.";
+  if (aiBusy) return;
+  const prompt = $('aiPrompt').value.trim();
+  if (!prompt) { showToast('AI에게 요청할 내용을 입력하세요.'); return; }
+  const before = getCode(); aiBusy = true;
+  addChatBubble(prompt, 'user'); aiConversation.push({role:'user',text:prompt}); $('aiPrompt').value = '';
+  const waiting = addChatBubble('답변을 준비하고 있어요', 'assistant', 'pending');
+  const waitingStartedAt = Date.now();
+  const waitingTicker = setInterval(() => { if (waiting?.isConnected) { const seconds = Math.floor((Date.now() - waitingStartedAt) / 1000); waiting.textContent = `답변을 준비하고 있어요${'.'.repeat(1 + (seconds % 3))} (${Math.floor(seconds / 60)}분 ${seconds % 60}초)`; } }, 1000);
+  $('askAiButton').disabled = true; $('askAiButton').textContent = '응답 중…';
+  $('aiStatus').textContent = 'EasyPeasy 지원 문법을 기준으로 확인하고 있습니다.';
+  postJSON('/api/ai', {code:before,prompt,history:aiConversation.slice(0,-1).slice(-12)}).then(async data => {
+    clearInterval(waitingTicker); waiting?.remove(); pendingExplanation = data.explanation || '답변을 받았습니다.';
+    addChatBubble(pendingExplanation, 'assistant'); aiConversation.push({role:'assistant',text:pendingExplanation});
+    if (typeof data.code === 'string' && data.code !== before) {
+      if (before !== getCode()) throw new Error('요청 중 편집기 내용이 변경되어 제안을 적용하지 않았습니다. 다시 요청해 주세요.');
+      // Client-side final guard: never silently offer code with obvious parser errors.
+      const checked = await postJSON('/api/diagnose', {code:data.code});
+      const errors = (checked.diagnostics || []).filter(d => d.severity === 'error');
+      if (errors.length) {
+        addChatBubble(`수정안에서 문법 검사 오류 ${errors.length}개가 발견되어 자동 적용을 막았습니다. 첫 오류: ${errors[0].message} (${errors[0].line}행)`, 'assistant');
+        $('aiStatus').textContent = '수정안이 검증을 통과하지 못해 적용하지 않았습니다.'; return;
+      }
+      proposedCode = data.code; $('editExplanation').textContent = data.explanation;
+      $('oldCode').textContent = before; $('newCode').textContent = proposedCode;
+      $('editDialog').showModal(); $('aiStatus').textContent = '수정안을 검사했습니다. 비교 후 적용할 수 있습니다.';
     } else {
-      $("aiStatus").textContent = "설명 완료. 코드 변경은 적용되지 않았습니다.";
+      $('aiStatus').textContent = '답변 완료. 코드 변경이 필요하지 않아 수정안을 만들지 않았습니다.';
     }
   }).catch(err => {
-    $("aiStatus").textContent = err.message;
-    $("aiResponse").textContent = err.message;
-  }).finally(() => { $("askAiButton").disabled = false; $("askAiButton").textContent = "✳ AI에게 요청"; });
+    clearInterval(waitingTicker); waiting?.remove(); const errorText=`요청을 완료하지 못했습니다: ${err.message}`; addChatBubble(errorText, 'assistant'); aiConversation.push({role:'assistant',text:errorText});
+    $('aiStatus').textContent = err.message;
+  }).finally(() => { clearInterval(waitingTicker); waiting?.remove(); aiBusy = false; $('askAiButton').disabled = false; $('askAiButton').textContent = '보내기 ↑'; });
 }
+
 function applyAIEdit() {
   if (typeof proposedCode !== "string") return;
   if (getCode() !== $("oldCode").textContent) { showToast("편집기 내용이 바뀌어 제안을 취소했습니다."); $("editDialog").close(); return; }
@@ -346,13 +363,14 @@ document.querySelectorAll(".panel-tab").forEach(b => b.addEventListener("click",
 document.querySelectorAll(".rail-button[data-view]").forEach(b => b.addEventListener("click", () => openSidebar(b.dataset.view)));
 document.querySelectorAll(".mobile-nav button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll(".mobile-nav button").forEach(x => x.classList.toggle("active", x === b));
-  if (b.dataset.mobile === "output") setPanel("output");
-  else if (b.dataset.mobile === "problems") setPanel("problems");
-  else if (b.dataset.mobile === "ai" || b.dataset.mobile === "files") openSidebar(b.dataset.mobile === "ai" ? "ai" : "files");
+  if (b.dataset.mobile === "ai" || b.dataset.mobile === "files") openSidebar(b.dataset.mobile);
   else { $("sidebar").classList.remove("mobile-open"); }
 }));
 $("runButton").addEventListener("click", runCode);
 $("askAiButton").addEventListener("click", askAI);
+$("aiPrompt").addEventListener("keydown", e => { if(e.key === 'Enter' && !e.shiftKey){e.preventDefault();askAI();} });
+$("brandHome").addEventListener("click", e => { e.preventDefault(); if(getCode() !== savedCode && !confirm('저장하지 않은 코드가 있습니다. 새로고침할까요?')) return; location.reload(); });
+$("clearCodeButton").addEventListener("click", () => { if(!getCode()) return showToast('이미 코드가 비어 있습니다.'); if(!confirm('현재 파일의 코드를 모두 지울까요?')) return; setCode(''); showToast('현재 파일의 코드를 모두 지웠습니다.'); });
 $("openAiFromRight").addEventListener("click", () => openSidebar("ai"));
 $("toggleRightPanel").addEventListener("click", () => { const folded = $("rightPanel").classList.toggle("folded"); document.querySelector(".workspace").classList.toggle("right-folded", folded); });
 $("helpButton").addEventListener("click", () => openSidebar("help"));
@@ -367,6 +385,21 @@ $("pythonButton").addEventListener("click", async () => {
   if(/random\.(?:randint|choice)\(/.test(py))py='import random\n'+py;
   $('outputText').textContent="# EasyPeasy → Python 변환 결과 (초안)\n"+py;$('runMeta').textContent='Python 변환 결과를 출력 창에 표시했습니다.';setPanel('output');
   try{await navigator.clipboard.writeText(py);showToast('변환된 Python 코드가 복사되었습니다.');}catch{showToast('변환 결과를 출력 창에 표시했습니다. 클립보드 권한을 확인하세요.');}
+});
+$("convertButton").addEventListener("click", async () => {
+  const source=getCode().trim(); if(!source) return showToast('변환할 코드를 입력하세요.');
+  const language=(prompt('원본 코드의 언어를 입력하세요 (예: Python, JavaScript, Java, C++)','Python')||'').trim(); if(!language)return;
+  const button=$('convertButton'); button.disabled=true; button.textContent='AI 변환 중…'; $('aiStatus').textContent='변환 요청 처리 중입니다. 최대 10분까지 걸릴 수 있습니다.';
+  try {
+    const data=await postJSON('/api/convert',{source,language});
+    if(!data.code) throw new Error(data.error||'변환 결과가 비어 있습니다.');
+    $('oldCode').textContent=source; $('newCode').textContent=data.code; $('editExplanation').textContent=`${language}에서 EasyPeasy로 변환했습니다. 지원하지 않는 기능은 설명에 표시됩니다.
+
+${data.explanation||''}`;
+    proposedCode=data.code; pendingExplanation=data.explanation||'언어 변환 결과'; $('editDialog').showModal();
+    $('aiStatus').textContent='변환 결과를 검토한 뒤 편집기에 적용하세요.'; openSidebar('ai');
+  } catch(err) { showToast(`변환 실패: ${err.message}`); }
+  finally { button.disabled=false; button.textContent='⇄ 다른 언어 → EP'; $('aiStatus').textContent='변환 요청이 종료되었습니다.'; }
 });
 $("downloadButton").addEventListener("click", exportProject);
 $("newFileButton").addEventListener("click", addProjectFile);
