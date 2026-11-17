@@ -26,7 +26,7 @@ npm start
 
 ```dotenv
 GEMINI_API_KEY=여기에_본인_API_키
-GEMINI_MODEL=gemini-3.8-flash
+GEMINI_MODEL=gemini-3.5-flash-lite
 PORT=3000
 ```
 
@@ -65,4 +65,4 @@ npm test
 
 ## AI 응답 대기 시간
 
-AI 요청의 서버 측 타임아웃은 600초(10분)로 설정되어 있습니다. 모델은 `gemini-3.8-flash`로 고정되어 있으며 다른 모델로 자동 전환하지 않습니다. 실제 사용 가능 여부는 Google AI API 계정과 해당 모델의 제공 상태에 따라 달라집니다. `.env`에 `GEMINI_API_KEY`를 입력하세요.
+AI 요청의 서버 측 타임아웃은 600초(10분)로 설정되어 있습니다. 모델은 `GEMINI_MODEL`로 설정할 수 있으며 기본값은 `gemini-3.5-flash-lite`입니다. 실제 사용 가능 여부는 Google AI API 계정과 해당 모델의 제공 상태에 따라 달라집니다. `.env`에 `GEMINI_API_KEY`를 입력하세요.

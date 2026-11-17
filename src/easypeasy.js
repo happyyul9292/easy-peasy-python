@@ -139,25 +139,27 @@ function getBlock(lines, start, baseIndent) {
   return { block, next: i };
 }
 
-function parseInputPrompt(expr, inputs, inputState) {
+async function parseInputPrompt(expr, state) {
   const match = expr.match(/^input\((.*)\)$/s);
-  if (!match) return null;
+  if (!match) return { matched: false };
   const inside = match[1].trim();
   const ask = inside.match(/^ask\((['"])(.*?)\1\)$/s);
   const direct = inside.match(/^(['"])(.*?)\1$/s);
   const prompt = ask ? ask[2] : direct ? direct[2] : "";
-  const raw = inputs[inputState.index++];
+  const waitStart = Date.now();
+  const raw = state.inputState.index < state.inputs.length ? state.inputs[state.inputState.index++] : state.getInput ? await state.getInput(prompt) : undefined;
+  state.deadline += Date.now() - waitStart;
   if (raw === undefined) throw new EasyError(`프로그램 입력이 필요합니다: ${prompt || "값을 입력하세요"}`);
   const trimmed = String(raw).trim();
-  if (/^-?(0|[1-9]\d*)$/.test(trimmed)) return Number.parseInt(trimmed, 10);
-  if (/^-?(?:\d+\.\d*|\.\d+)$/.test(trimmed)) return Number(trimmed);
-  if (trimmed === "true") return true;
-  if (trimmed === "false") return false;
-  if (trimmed === "none") return null;
-  return String(raw);
+  if (/^-?(0|[1-9]\d*)$/.test(trimmed)) return { matched: true, value: Number.parseInt(trimmed, 10) };
+  if (/^-?(?:\d+\.\d*|\.\d+)$/.test(trimmed)) return { matched: true, value: Number(trimmed) };
+  if (trimmed === "true") return { matched: true, value: true };
+  if (trimmed === "false") return { matched: true, value: false };
+  if (trimmed === "none") return { matched: true, value: null };
+  return { matched: true, value: String(raw) };
 }
 
-function executeLines(lines, env, state, baseIndent = -1) {
+async function executeLines(lines, env, state, baseIndent = -1) {
   for (let i = 0; i < lines.length; i++) {
     if (Date.now() > state.deadline) throw new EasyError("실행 시간 제한을 초과했습니다.");
     if (state.steps++ > 50_000) throw new EasyError("실행 단계 제한을 초과했습니다.");
@@ -179,20 +181,20 @@ function executeLines(lines, env, state, baseIndent = -1) {
       if (repeatMatch) {
         const n = Number(evaluate(repeatMatch[1], env));
         if (!Number.isInteger(n) || n < 0 || n > 1000) throw new EasyError("repeat 횟수는 0~1000 사이의 정수여야 합니다.", line);
-        for (let j = 0; j < n; j++) executeLines(normalized, env, state, indent);
+        for (let j = 0; j < n; j++) await executeLines(normalized, env, state, indent);
       } else if (forMatch) {
         const args = splitTopLevel(forMatch[2]).map(x => Number(evaluate(x, env)));
         const start = args.length === 1 ? 0 : args[0], end = args.length === 1 ? args[0] : args[1];
         if (!Number.isInteger(start) || !Number.isInteger(end) || Math.abs(end-start) > 1000) throw new EasyError("range 범위가 올바르지 않습니다.", line);
-        for (let j = start; j < end; j++) { env[forMatch[1]] = j; executeLines(normalized, env, state, indent); }
-      } else if (condition) executeLines(normalized, env, state, indent);
+        for (let j = start; j < end; j++) { env[forMatch[1]] = j; await executeLines(normalized, env, state, indent); }
+      } else if (condition) await executeLines(normalized, env, state, indent);
       i = next - 1;
       const nextText = lines[next]?.text ?? lines[next];
       if (ifMatch && nextText?.startsWith("else:")) {
         const elseIndent = lines[next].indent ?? 0;
         const elseBlockRaw = getBlock(lines.map(x => typeof x === "string" ? x : " ".repeat(x.indent ?? 0) + x.text), next + 1, elseIndent);
         const elseBlock = elseBlockRaw.block.map(b => ({ ...b, indent: b.indent }));
-        if (!condition) executeLines(elseBlock, env, state, elseIndent);
+        if (!condition) await executeLines(elseBlock, env, state, elseIndent);
         i = elseBlockRaw.next - 1;
       }
       continue;
@@ -201,19 +203,22 @@ function executeLines(lines, env, state, baseIndent = -1) {
     const printMatch = text.match(/^print\((.*)\)$/s);
     if (printMatch) {
       const parts = splitTopLevel(printMatch[1]);
-      const values = parts.map(part => {
-        const inputVal = parseInputPrompt(part, state.inputs, state.inputState);
-        return inputVal !== null ? inputVal : evaluate(part, env);
-      });
-      state.output.push(values.map(v => v === null ? "none" : typeof v === "object" ? JSON.stringify(v) : String(v)).join(" "));
+      const values = [];
+      for (const part of parts) {
+        const inputVal = await parseInputPrompt(part, state);
+        values.push(inputVal.matched ? inputVal.value : evaluate(part, env));
+      }
+      const printed = values.map(v => v === null ? "none" : typeof v === "object" ? JSON.stringify(v) : String(v)).join(" ");
+      state.output.push(printed);
+      state.onPrint?.(state.output.join("\n").slice(0, 30000));
       continue;
     }
 
     const assignment = text.match(/^([A-Za-z_]\w*)\s*=\s*(.+)$/s);
     if (assignment) {
       const [, name, expr] = assignment;
-      const inputVal = parseInputPrompt(expr, state.inputs, state.inputState);
-      env[name] = inputVal !== null ? inputVal : evaluate(expr, env);
+      const inputVal = await parseInputPrompt(expr, state);
+      env[name] = inputVal.matched ? inputVal.value : evaluate(expr, env);
       continue;
     }
 
@@ -282,12 +287,14 @@ export async function runEasyPeasy(code, inputs = [], options = {}) {
   const state = {
     output: [],
     inputs,
+    getInput: options.getInput,
+    onPrint: options.onPrint,
     inputState: { index: 0 },
     deadline: Date.now() + (options.timeoutMs || 1500),
     steps: 0
   };
   const lines = code.split(/\r?\n/).map((text, i) => ({ text: text.trim(), line: i + 1, indent: text.match(/^\s*/)[0].length }));
-  try { executeLines(lines, env, state); } catch (error) { if (error && (!error.line || (error.line === 1 && (state.currentLine || 1) !== 1))) error.line = state.currentLine || 1; throw error; }
+  try { await executeLines(lines, env, state); } catch (error) { if (error && (!error.line || (error.line === 1 && (state.currentLine || 1) !== 1))) error.line = state.currentLine || 1; throw error; }
   let output = state.output.join("\n");
   if (output.length > (options.maxOutput || 30_000)) output = output.slice(0, options.maxOutput || 30_000) + "\n…출력이 잘렸습니다.";
   return { output, variables: Object.fromEntries(Object.entries(env).map(([k,v]) => [k, v])), steps: state.steps };

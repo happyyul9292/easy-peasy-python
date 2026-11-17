@@ -42,3 +42,10 @@ test("diagnoses an unclosed string", () => {
   const result = diagnoseEasyPeasy('name = "도율');
   assert.ok(result.some(item => /닫는 따옴표/.test(item.message)));
 });
+
+test("requests input once per executed loop iteration and skips untaken branches", async () => {
+  const prompts = []; const values = ["3", "5", "none"];
+  const result = await runEasyPeasy('for i in range(3):\n    value = input(ask("Value?"))\n    print(value)\nif false:\n    unused = input("Skip")', [], {getInput: async p => { prompts.push(p); return values.shift(); }});
+  assert.deepEqual(prompts, ["Value?", "Value?", "Value?"]);
+  assert.equal(result.output, "3\n5\nnone");
+});

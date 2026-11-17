@@ -189,29 +189,26 @@ async function runDiagnostics() {
   }, 180);
 }
 function escapeHTML(s) { return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-async function collectTerminalInputs(code) {
-  const matches = [...code.matchAll(/input\s*\(\s*(?:ask\s*\(\s*(["'])(.*?)\1\s*\)|(["'])(.*?)\3)?\s*\)/gs)];
-  const inputs = [];
-  const terminal = $("terminalInput");
-  terminal.innerHTML = "";
-  for (let i = 0; i < matches.length; i++) {
-    const promptText = matches[i][2] ?? matches[i][4] ?? "입력하세요: ";
-    const row = document.createElement("form");
-    row.className = "terminal-prompt";
-    const label = document.createElement("label"); label.textContent = promptText;
-    const input = document.createElement("input"); input.type = "text"; input.autocomplete = "off"; input.setAttribute("aria-label", promptText);
-    const submit = document.createElement("button"); submit.type = "submit"; submit.textContent = "입력";
-    row.append(label, input, submit); terminal.appendChild(row);
-    input.focus();
-    const value = await new Promise(resolve => {
-      row.addEventListener("submit", e => { e.preventDefault(); resolve(input.value); }, {once:true});
-    });
-    inputs.push(value);
-    const echo = document.createElement("div"); echo.className = "console-text"; echo.textContent = `${promptText}${value}`;
-    terminal.appendChild(echo);
-    row.remove();
+async function interactiveRun(code) {
+  const response = await fetch('/api/run/interactive', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+  if (!response.ok) { const data = await response.json(); throw new Error(data.error || '실행 요청 실패'); }
+  const reader = response.body.getReader(), decoder = new TextDecoder(); let buffer = '', result;
+  async function handle(event) {
+    if (event.type === 'error') { const error = new Error(event.error); error.details = event; throw error; }
+    if (event.type === 'result') { result = event; return; }
+    if (event.type === 'output') { $('outputText').textContent = event.output; return; }
+    if (event.type !== 'input') return;
+    const terminal = $('terminalInput'), row = document.createElement('form'); row.className = 'terminal-prompt';
+    const label = document.createElement('label'); label.textContent = event.prompt || '입력하세요: ';
+    const input = document.createElement('input'); input.type='text'; input.autocomplete='off'; input.setAttribute('aria-label', label.textContent);
+    const submit = document.createElement('button'); submit.type='submit'; submit.textContent='입력'; row.append(label,input,submit); terminal.appendChild(row); input.focus();
+    const value = await new Promise(resolve => row.addEventListener('submit', e => {e.preventDefault(); resolve(input.value);}, {once:true}));
+    const echo = document.createElement('div'); echo.className='console-text'; echo.textContent=label.textContent+value; row.replaceWith(echo);
+    await postJSON('/api/run/input',{id:event.id,value});
   }
-  return inputs;
+  try { while (true) { const chunk = await reader.read(); buffer += decoder.decode(chunk.value || new Uint8Array(), {stream:!chunk.done}); let pos; while ((pos=buffer.indexOf('\n')) >= 0) {const line=buffer.slice(0,pos); buffer=buffer.slice(pos+1); if(line) await handle(JSON.parse(line));} if(chunk.done) break; } }
+  catch(error) { await reader.cancel(); throw error; }
+  if (!result) throw new Error('실행 연결이 종료되었습니다.'); return result;
 }
 async function runCode() {
   const code = getCode();
@@ -219,8 +216,7 @@ async function runCode() {
   setPanel("output"); $("outputText").textContent = ""; $("terminalInput").innerHTML = ""; $("runMeta").textContent = "";
   const start = performance.now();
   try {
-    const inputs = await collectTerminalInputs(code);
-    const data = await postJSON("/api/run", {code, inputs});
+    const data = await interactiveRun(code);
     $("outputText").textContent = data.output || "(출력이 없습니다.)";
     $("runMeta").textContent = `${Math.round(performance.now()-start)} ms · ${data.steps} steps · 실행 완료`;
   } catch (e) {
@@ -380,11 +376,12 @@ $("cancelEdit").addEventListener("click", () => $("editDialog").close());
 $("clearOutput").addEventListener("click", () => { $("outputText").textContent = ""; $("runMeta").textContent = ""; });
 $("togglePanel").addEventListener("click", () => $("bottomPanel").classList.toggle("collapsed"));
 $("pythonButton").addEventListener("click", async () => {
-  const source=getCode();
-  let py=source.replace(/\binput\s*\(\s*ask\s*\(\s*(["'])(.*?)\1\s*\)\s*\)/g,'input("$2")').replace(/\btrue\b/g,"True").replace(/\bfalse\b/g,"False").replace(/\bnone\b/g,"None").replace(/\bfunction\s+(\w+)\s*\(/g,"def $1(").replace(/\brepeat\s+(.+):/g,"for _ in range($1):").replace(/\bupsort\(/g,"sorted(").replace(/\bdownsort\(([^()]*)\)/g,"sorted($1, reverse=True)").replace(/\brandom_int\(/g,"random.randint(").replace(/\brandom_choice\(/g,"random.choice(").replace(/\bis_even\(([^()]*)\)/g,"(($1) % 2 == 0)").replace(/\bis_odd\(([^()]*)\)/g,"(($1) % 2 != 0)");
-  if(/random\.(?:randint|choice)\(/.test(py))py='import random\n'+py;
-  $('outputText').textContent="# EasyPeasy → Python 변환 결과 (초안)\n"+py;$('runMeta').textContent='Python 변환 결과를 출력 창에 표시했습니다.';setPanel('output');
-  try{await navigator.clipboard.writeText(py);showToast('변환된 Python 코드가 복사되었습니다.');}catch{showToast('변환 결과를 출력 창에 표시했습니다. 클립보드 권한을 확인하세요.');}
+  const source=getCode(); if (!source.trim()) return showToast('변환할 코드를 입력하세요.');
+  const button=$('pythonButton'); button.disabled=true; const original=button.textContent; button.textContent='AI 변환 중…';
+  try { const data=await postJSON('/api/python',{source}); $('outputText').textContent=data.code; $('runMeta').textContent='AI Python 변환 · 실행 결과를 확인하세요. ' + data.explanation; setPanel('output');
+    try { await navigator.clipboard.writeText(data.code); showToast('Python 코드가 복사되었습니다.'); } catch { showToast('Python 코드를 출력 창에 표시했습니다.'); }
+  } catch (error) { $('outputText').textContent='Python 변환 실패: '+error.message; setPanel('output'); showToast('AI 변환에 실패했습니다. 출력 창을 확인하세요.'); }
+  finally {button.disabled=false; button.textContent=original;}
 });
 $("convertButton").addEventListener("click", async () => {
   const source=getCode().trim(); if(!source) return showToast('변환할 코드를 입력하세요.');
